@@ -8,4 +8,6 @@ function requireEnv(name: string): string {
 
 export const config = {
   discordToken: requireEnv('DISCORD_TOKEN'),
+  discordClientId: requireEnv('DISCORD_CLIENT_ID'),
+  discordGuildId: process.env.DISCORD_GUILD_ID,
 };

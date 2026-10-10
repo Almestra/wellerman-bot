@@ -12,7 +12,7 @@ Work in progress: the bot connects to Discord, and the features below are being 
 
 - [x] Project setup: TypeScript, ESLint, Prettier, CI
 - [x] Connection to Discord
-- [ ] Slash commands
+- [x] Slash commands
 - [ ] Feed subscriptions (`/feed add`, `/feed list`, `/feed remove`)
 - [ ] Automatic publication of new articles
 - [ ] Categories, keyword filters, OPML import and export
@@ -43,27 +43,33 @@ npm install
 
 ### Configuration
 
-Copy `.env.example` to `.env` and fill in your bot token:
+Copy `.env.example` to `.env` and fill it in:
 
-```
-DISCORD_TOKEN=your-bot-token
-```
+| Variable            | Description                                                                |
+| ------------------- | -------------------------------------------------------------------------- |
+| `DISCORD_TOKEN`     | Bot token                                                                  |
+| `DISCORD_CLIENT_ID` | Application ID                                                             |
+| `DISCORD_GUILD_ID`  | Optional. Server to register commands on; leave empty to register globally |
 
 ### Run
 
+Register the slash commands, then start the bot:
+
 ```bash
+npm run deploy-commands
 npm run dev
 ```
 
 ## Scripts
 
-| Script           | Description                           |
-| ---------------- | ------------------------------------- |
-| `npm run dev`    | Run the bot in watch mode             |
-| `npm run build`  | Compile TypeScript to `dist/`         |
-| `npm start`      | Run the compiled bot                  |
-| `npm run check`  | Type-check, lint and check formatting |
-| `npm run format` | Format the code with Prettier         |
+| Script                    | Description                              |
+| ------------------------- | ---------------------------------------- |
+| `npm run dev`             | Run the bot in watch mode                |
+| `npm run build`           | Compile TypeScript to `dist/`            |
+| `npm start`               | Run the compiled bot                     |
+| `npm run deploy-commands` | Register the slash commands with Discord |
+| `npm run check`           | Type-check, lint and check formatting    |
+| `npm run format`          | Format the code with Prettier            |
 
 ## License
 
