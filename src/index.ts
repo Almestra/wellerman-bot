@@ -3,6 +3,9 @@ import type { Interaction } from 'discord.js';
 
 import { commands } from './commands/index.ts';
 import { config } from './config.ts';
+import { openDatabase } from './database.ts';
+
+openDatabase(config.databasePath);
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 

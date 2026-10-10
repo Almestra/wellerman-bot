@@ -23,6 +23,7 @@ Work in progress: the bot connects to Discord, and the features below are being 
 - **Runtime:** [Node.js](https://nodejs.org/) 24
 - **Language:** [TypeScript](https://www.typescriptlang.org/)
 - **Discord library:** [discord.js](https://discord.js.org/)
+- **Database:** [SQLite](https://www.sqlite.org/) with [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
 - **Code quality:** [ESLint](https://eslint.org/) with [typescript-eslint](https://typescript-eslint.io/), and [Prettier](https://prettier.io/)
 - **CI:** GitHub Actions
 
