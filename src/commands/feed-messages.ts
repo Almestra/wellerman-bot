@@ -4,6 +4,8 @@ import type { Subscription } from '../subscriptions/subscription-repository.ts';
 import type { SubscribeResult } from '../subscriptions/subscription-service.ts';
 
 const messageLimit = 2000;
+const choiceLimit = 25;
+const choiceNameLimit = 100;
 
 export function describeSubscribeResult(
   result: SubscribeResult,
@@ -45,4 +47,36 @@ export function formatSubscriptionList(subscriptions: Subscription[]): string {
     message = [...shown, `…and ${String(hidden)} more.`].join('\n');
   }
   return message;
+}
+
+export function describeUnsubscribeResult(
+  removed: Subscription | undefined,
+): string {
+  if (!removed) return 'That subscription does not exist anymore.';
+
+  const channel = channelMention(removed.channelId);
+  return `Unsubscribed ${channel} from **${escapeMarkdown(removed.feedTitle)}**.`;
+}
+
+function truncate(text: string, limit: number): string {
+  return text.length > limit ? `${text.slice(0, limit - 1)}…` : text;
+}
+
+export function suggestSubscriptions(
+  subscriptions: Subscription[],
+  typed: string,
+  channelName: (channelId: string) => string,
+): { name: string; value: number }[] {
+  const search = typed.toLowerCase();
+  return subscriptions
+    .toSorted(byTitle)
+    .map(({ id, channelId, feedTitle }) => ({
+      name: truncate(
+        `#${channelName(channelId)} · ${feedTitle}`,
+        choiceNameLimit,
+      ),
+      value: id,
+    }))
+    .filter(({ name }) => name.toLowerCase().includes(search))
+    .slice(0, choiceLimit);
 }

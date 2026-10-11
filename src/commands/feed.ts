@@ -10,7 +10,9 @@ import type { ChatInputCommandInteraction } from 'discord.js';
 import type { Command, CommandContext } from './command.ts';
 import {
   describeSubscribeResult,
+  describeUnsubscribeResult,
   formatSubscriptionList,
+  suggestSubscriptions,
 } from './feed-messages.ts';
 
 async function add(
@@ -36,6 +38,20 @@ async function list(
 ): Promise<void> {
   await interaction.reply({
     content: formatSubscriptionList(subscriptions.list(interaction.guildId)),
+    flags: MessageFlags.Ephemeral,
+  });
+}
+
+async function remove(
+  interaction: ChatInputCommandInteraction<'cached' | 'raw'>,
+  { subscriptions }: CommandContext,
+): Promise<void> {
+  const removed = subscriptions.unsubscribe(
+    interaction.guildId,
+    interaction.options.getInteger('subscription', true),
+  );
+  await interaction.reply({
+    content: describeUnsubscribeResult(removed),
     flags: MessageFlags.Ephemeral,
   });
 }
@@ -70,6 +86,18 @@ export const feed: Command = {
       subcommand
         .setName('list')
         .setDescription('List the feed subscriptions of this server'),
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('remove')
+        .setDescription('Unsubscribe a channel from a feed')
+        .addIntegerOption((option) =>
+          option
+            .setName('subscription')
+            .setDescription('Subscription to remove')
+            .setRequired(true)
+            .setAutocomplete(true),
+        ),
     ),
   async execute(interaction, context) {
     if (!interaction.inGuild()) {
@@ -82,6 +110,21 @@ export const feed: Command = {
       case 'list':
         await list(interaction, context);
         break;
+      case 'remove':
+        await remove(interaction, context);
+        break;
     }
+  },
+  async autocomplete(interaction, { subscriptions }) {
+    if (!interaction.inGuild()) return;
+
+    const { guild } = interaction;
+    await interaction.respond(
+      suggestSubscriptions(
+        subscriptions.list(interaction.guildId),
+        interaction.options.getFocused(),
+        (channelId) => guild?.channels.cache.get(channelId)?.name ?? channelId,
+      ),
+    );
   },
 };

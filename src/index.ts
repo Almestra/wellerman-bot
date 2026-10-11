@@ -24,6 +24,12 @@ client.once(Events.ClientReady, (readyClient) => {
 });
 
 async function handleInteraction(interaction: Interaction): Promise<void> {
+  if (interaction.isAutocomplete()) {
+    const command = commands.get(interaction.commandName);
+    await command?.autocomplete?.(interaction, context);
+    return;
+  }
+
   if (!interaction.isChatInputCommand()) return;
 
   const command = commands.get(interaction.commandName);

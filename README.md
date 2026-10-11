@@ -13,7 +13,7 @@ Work in progress: the bot connects to Discord, and the features below are being 
 - [x] Project setup: TypeScript, ESLint, Prettier, CI
 - [x] Connection to Discord
 - [x] Slash commands
-- [ ] Feed subscriptions (`/feed add`, `/feed list`, `/feed remove`)
+- [x] Feed subscriptions (`/feed add`, `/feed list`, `/feed remove`)
 - [ ] Automatic publication of new articles
 - [ ] Categories, keyword filters, OPML import and export
 - [ ] Read later and weekly digest
