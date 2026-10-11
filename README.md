@@ -25,6 +25,7 @@ Work in progress: the bot connects to Discord, and the features below are being 
 - **Discord library:** [discord.js](https://discord.js.org/)
 - **Database:** [SQLite](https://www.sqlite.org/) with [better-sqlite3](https://github.com/WiseLibs/better-sqlite3)
 - **Feed parsing:** [rss-parser](https://github.com/rbren/rss-parser)
+- **Tests:** [Vitest](https://vitest.dev/)
 - **Code quality:** [ESLint](https://eslint.org/) with [typescript-eslint](https://typescript-eslint.io/), and [Prettier](https://prettier.io/)
 - **CI:** GitHub Actions
 
@@ -70,6 +71,8 @@ npm run dev
 | `npm run build`           | Compile TypeScript to `dist/`            |
 | `npm start`               | Run the compiled bot                     |
 | `npm run deploy-commands` | Register the slash commands with Discord |
+| `npm test`                | Run the tests                            |
+| `npm run coverage`        | Run the tests with a coverage report     |
 | `npm run check`           | Type-check, lint and check formatting    |
 | `npm run format`          | Format the code with Prettier            |
 
