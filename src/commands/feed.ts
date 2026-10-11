@@ -8,7 +8,10 @@ import {
 import type { ChatInputCommandInteraction } from 'discord.js';
 
 import type { Command, CommandContext } from './command.ts';
-import { describeSubscribeResult } from './feed-messages.ts';
+import {
+  describeSubscribeResult,
+  formatSubscriptionList,
+} from './feed-messages.ts';
 
 async function add(
   interaction: ChatInputCommandInteraction<'cached' | 'raw'>,
@@ -25,6 +28,16 @@ async function add(
   });
 
   await interaction.editReply(describeSubscribeResult(result, channelId));
+}
+
+async function list(
+  interaction: ChatInputCommandInteraction<'cached' | 'raw'>,
+  { subscriptions }: CommandContext,
+): Promise<void> {
+  await interaction.reply({
+    content: formatSubscriptionList(subscriptions.list(interaction.guildId)),
+    flags: MessageFlags.Ephemeral,
+  });
 }
 
 export const feed: Command = {
@@ -52,11 +65,23 @@ export const feed: Command = {
               ChannelType.GuildAnnouncement,
             ),
         ),
+    )
+    .addSubcommand((subcommand) =>
+      subcommand
+        .setName('list')
+        .setDescription('List the feed subscriptions of this server'),
     ),
   async execute(interaction, context) {
     if (!interaction.inGuild()) {
       throw new Error('/feed is only available in servers');
     }
-    await add(interaction, context);
+    switch (interaction.options.getSubcommand()) {
+      case 'add':
+        await add(interaction, context);
+        break;
+      case 'list':
+        await list(interaction, context);
+        break;
+    }
   },
 };

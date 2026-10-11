@@ -1,6 +1,9 @@
 import { channelMention, escapeMarkdown } from 'discord.js';
 
+import type { Subscription } from '../subscriptions/subscription-repository.ts';
 import type { SubscribeResult } from '../subscriptions/subscription-service.ts';
+
+const messageLimit = 2000;
 
 export function describeSubscribeResult(
   result: SubscribeResult,
@@ -18,4 +21,28 @@ export function describeSubscribeResult(
     case 'not-a-feed':
       return 'That page is not an RSS or Atom feed.';
   }
+}
+
+function byTitle(a: Subscription, b: Subscription): number {
+  return a.feedTitle.localeCompare(b.feedTitle, 'en', { sensitivity: 'base' });
+}
+
+function describeSubscription(subscription: Subscription): string {
+  const channel = channelMention(subscription.channelId);
+  const title = escapeMarkdown(subscription.feedTitle);
+  return `- ${channel} · **${title}** · <${subscription.feedUrl}>`;
+}
+
+export function formatSubscriptionList(subscriptions: Subscription[]): string {
+  if (subscriptions.length === 0) {
+    return 'No feed subscriptions yet. Add one with `/feed add`.';
+  }
+
+  const lines = subscriptions.toSorted(byTitle).map(describeSubscription);
+  let message = lines.join('\n');
+  for (let hidden = 1; message.length > messageLimit; hidden += 1) {
+    const shown = lines.slice(0, lines.length - hidden);
+    message = [...shown, `…and ${String(hidden)} more.`].join('\n');
+  }
+  return message;
 }
