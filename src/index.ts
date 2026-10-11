@@ -1,11 +1,21 @@
 import { Client, Events, GatewayIntentBits, MessageFlags } from 'discord.js';
 import type { Interaction } from 'discord.js';
 
+import type { CommandContext } from './commands/command.ts';
 import { commands } from './commands/index.ts';
 import { config } from './config.ts';
 import { openDatabase } from './database.ts';
+import { readFeed } from './feeds/feed-reader.ts';
+import { SubscriptionRepository } from './subscriptions/subscription-repository.ts';
+import { SubscriptionService } from './subscriptions/subscription-service.ts';
 
-openDatabase(config.databasePath);
+const database = openDatabase(config.databasePath);
+const context: CommandContext = {
+  subscriptions: new SubscriptionService(
+    new SubscriptionRepository(database),
+    readFeed,
+  ),
+};
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds] });
 
@@ -23,7 +33,7 @@ async function handleInteraction(interaction: Interaction): Promise<void> {
   }
 
   try {
-    await command.execute(interaction);
+    await command.execute(interaction, context);
   } catch (error) {
     console.error(error);
     const message = {
