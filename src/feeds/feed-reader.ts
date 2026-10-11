@@ -5,11 +5,35 @@ export interface Feed {
   title: string;
 }
 
+export interface Article {
+  id: string;
+  title: string;
+  url: string;
+  publishedAt: Date | undefined;
+}
+
 export type FeedReadResult =
-  | { ok: true; feed: Feed }
+  | { ok: true; feed: Feed; articles: Article[] }
   | { ok: false; reason: 'invalid-url' | 'unreachable' | 'not-a-feed' };
 
-const parser = new Parser();
+interface Item extends Parser.Item {
+  id?: string;
+}
+
+const parser = new Parser<object, Item>();
+
+function toArticle(item: Item): Article | undefined {
+  const url = item.link;
+  const id = item.guid ?? item.id ?? url;
+  if (!id || !url) return undefined;
+
+  return {
+    id,
+    title: (item.title ?? '').trim() || url,
+    url,
+    publishedAt: item.isoDate ? new Date(item.isoDate) : undefined,
+  };
+}
 
 function parseHttpUrl(input: string): URL | undefined {
   if (!URL.canParse(input)) return undefined;
@@ -38,10 +62,11 @@ export async function readFeed(
   }
 
   try {
-    const { title } = await parser.parseString(body);
+    const { title, items } = await parser.parseString(body);
     return {
       ok: true,
       feed: { url: url.href, title: (title ?? '').trim() || url.hostname },
+      articles: items.map(toArticle).filter((article) => article !== undefined),
     };
   } catch {
     return { ok: false, reason: 'not-a-feed' };
