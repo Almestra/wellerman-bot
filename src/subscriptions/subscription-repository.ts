@@ -20,6 +20,12 @@ const insertFeed = `
   ON CONFLICT (url) DO NOTHING
 `;
 
+const insertSeenArticle = `
+  INSERT INTO seen_articles (feed_id, article_id)
+  SELECT id, @articleId FROM feeds WHERE url = @feedUrl
+  ON CONFLICT DO NOTHING
+`;
+
 const insertSubscription = `
   INSERT INTO subscriptions (feed_id, guild_id, channel_id)
   SELECT id, @guildId, @channelId FROM feeds WHERE url = @feedUrl
@@ -43,6 +49,11 @@ const deleteSubscription = `
   WHERE id = @id AND guild_id = @guildId
 `;
 
+const deleteUnfollowedFeeds = `
+  DELETE FROM feeds
+  WHERE id NOT IN (SELECT feed_id FROM subscriptions)
+`;
+
 export class SubscriptionRepository {
   private readonly database: Database.Database;
 
@@ -50,9 +61,15 @@ export class SubscriptionRepository {
     this.database = database;
   }
 
-  add(subscription: NewSubscription): boolean {
+  add(subscription: NewSubscription, articleIds: string[]): boolean {
     const insert = this.database.transaction(() => {
-      this.database.prepare(insertFeed).run(subscription);
+      const insertedFeed = this.database.prepare(insertFeed).run(subscription);
+      if (insertedFeed.changes === 1) {
+        const markSeen = this.database.prepare(insertSeenArticle);
+        for (const articleId of articleIds) {
+          markSeen.run({ feedUrl: subscription.feedUrl, articleId });
+        }
+      }
       const { changes } = this.database
         .prepare(insertSubscription)
         .run(subscription);
@@ -68,9 +85,13 @@ export class SubscriptionRepository {
   }
 
   remove(guildId: string, id: number): boolean {
-    const { changes } = this.database
-      .prepare(deleteSubscription)
-      .run({ id, guildId });
-    return changes === 1;
+    const remove = this.database.transaction(() => {
+      const { changes } = this.database
+        .prepare(deleteSubscription)
+        .run({ id, guildId });
+      this.database.prepare(deleteUnfollowedFeeds).run();
+      return changes === 1;
+    });
+    return remove();
   }
 }

@@ -1,10 +1,8 @@
-import type { Feed, FeedReadResult } from '../feeds/feed-reader.ts';
+import type { Feed, FeedReader } from '../feeds/feed-reader.ts';
 import type {
   Subscription,
   SubscriptionRepository,
 } from './subscription-repository.ts';
-
-export type FeedReader = (url: string) => Promise<FeedReadResult>;
 
 export interface SubscribeRequest {
   guildId: string;
@@ -29,13 +27,16 @@ export class SubscriptionService {
     const result = await this.readFeed(request.url);
     if (!result.ok) return { status: result.reason };
 
-    const { feed } = result;
-    const added = this.repository.add({
-      guildId: request.guildId,
-      channelId: request.channelId,
-      feedUrl: feed.url,
-      feedTitle: feed.title,
-    });
+    const { feed, articles } = result;
+    const added = this.repository.add(
+      {
+        guildId: request.guildId,
+        channelId: request.channelId,
+        feedUrl: feed.url,
+        feedTitle: feed.title,
+      },
+      articles.map((article) => article.id),
+    );
     return { status: added ? 'subscribed' : 'already-subscribed', feed };
   }
 

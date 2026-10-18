@@ -17,6 +17,12 @@ const schema = `
     channel_id TEXT NOT NULL,
     UNIQUE (channel_id, feed_id)
   ) STRICT;
+
+  CREATE TABLE IF NOT EXISTS seen_articles (
+    feed_id INTEGER NOT NULL REFERENCES feeds (id) ON DELETE CASCADE,
+    article_id TEXT NOT NULL,
+    PRIMARY KEY (feed_id, article_id)
+  ) STRICT;
 `;
 
 export function openDatabase(path: string): Database.Database {

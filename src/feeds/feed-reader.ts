@@ -16,6 +16,8 @@ export type FeedReadResult =
   | { ok: true; feed: Feed; articles: Article[] }
   | { ok: false; reason: 'invalid-url' | 'unreachable' | 'not-a-feed' };
 
+export type FeedReader = (url: string) => Promise<FeedReadResult>;
+
 interface Item extends Parser.Item {
   id?: string;
 }
