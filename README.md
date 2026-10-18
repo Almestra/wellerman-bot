@@ -8,13 +8,13 @@ Wellerman is a Discord bot that delivers new articles from your RSS and Atom fee
 
 ## Roadmap
 
-Work in progress: the bot connects to Discord, and the features below are being built in order.
+Work in progress: the features below are being built in order.
 
 - [x] Project setup: TypeScript, ESLint, Prettier, CI
 - [x] Connection to Discord
 - [x] Slash commands
 - [x] Feed subscriptions (`/feed add`, `/feed list`, `/feed remove`)
-- [ ] Automatic publication of new articles
+- [x] Automatic publication of new articles
 - [ ] Categories, keyword filters, OPML import and export
 - [ ] Read later and weekly digest
 
@@ -62,6 +62,8 @@ Register the slash commands, then start the bot:
 npm run deploy-commands
 npm run dev
 ```
+
+The bot checks the feeds every 15 minutes. In the channels it posts to, it needs the View Channels, Send Messages and Embed Links permissions.
 
 ## Scripts
 
