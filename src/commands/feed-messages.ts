@@ -2,6 +2,7 @@ import { channelMention, escapeMarkdown } from 'discord.js';
 
 import type { Subscription } from '../subscriptions/subscription-repository.ts';
 import type { SubscribeResult } from '../subscriptions/subscription-service.ts';
+import { truncate } from '../text.ts';
 
 const messageLimit = 2000;
 const choiceLimit = 25;
@@ -56,10 +57,6 @@ export function describeUnsubscribeResult(
 
   const channel = channelMention(removed.channelId);
   return `Unsubscribed ${channel} from **${escapeMarkdown(removed.feedTitle)}**.`;
-}
-
-function truncate(text: string, limit: number): string {
-  return text.length > limit ? `${text.slice(0, limit - 1)}…` : text;
 }
 
 export function suggestSubscriptions(

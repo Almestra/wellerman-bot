@@ -11,4 +11,5 @@ export const config = {
   discordClientId: requireEnv('DISCORD_CLIENT_ID'),
   discordGuildId: process.env.DISCORD_GUILD_ID,
   databasePath: 'data/wellerman.db',
+  publicationInterval: 15 * 60_000,
 };

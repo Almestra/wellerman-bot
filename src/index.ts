@@ -6,6 +6,9 @@ import { commands } from './commands/index.ts';
 import { config } from './config.ts';
 import { openDatabase } from './database.ts';
 import { readFeed } from './feeds/feed-reader.ts';
+import { discordPublisher } from './publication/discord-publisher.ts';
+import { PublicationRepository } from './publication/publication-repository.ts';
+import { PublicationService } from './publication/publication-service.ts';
 import { SubscriptionRepository } from './subscriptions/subscription-repository.ts';
 import { SubscriptionService } from './subscriptions/subscription-service.ts';
 
@@ -17,10 +20,27 @@ const context: CommandContext = {
   ),
 };
 
-const client = new Client({ intents: [GatewayIntentBits.Guilds] });
+const client = new Client({
+  intents: [GatewayIntentBits.Guilds],
+  allowedMentions: { parse: [] },
+});
+
+const publication = new PublicationService(
+  new PublicationRepository(database),
+  readFeed,
+  discordPublisher(client),
+);
+
+function runPublication(): void {
+  publication
+    .publishNewArticles()
+    .catch(console.error)
+    .finally(() => setTimeout(runPublication, config.publicationInterval));
+}
 
 client.once(Events.ClientReady, (readyClient) => {
   console.log(`Logged in as ${readyClient.user.tag}`);
+  runPublication();
 });
 
 async function handleInteraction(interaction: Interaction): Promise<void> {
