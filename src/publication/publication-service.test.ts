@@ -1,8 +1,7 @@
 import { assert, describe, expect, it } from 'vitest';
 
 import { openDatabase } from '../database.ts';
-import { readFeed } from '../feeds/feed-reader.ts';
-import type { FeedReader } from '../feeds/feed-reader.ts';
+import { createFeedReader } from '../feeds/feed-reader.ts';
 import { SubscriptionRepository } from '../subscriptions/subscription-repository.ts';
 import { SubscriptionService } from '../subscriptions/subscription-service.ts';
 import { PublicationRepository } from './publication-repository.ts';
@@ -31,11 +30,10 @@ function item(title: string, date?: string): string {
 
 function createBot() {
   const web = new Map<string, string>();
-  const reader: FeedReader = (url) =>
-    readFeed(url, (input) => {
-      const body = web.get(new Request(input).url);
-      return Promise.resolve(new Response(body, { status: body ? 200 : 404 }));
-    });
+  const reader = createFeedReader((input) => {
+    const body = web.get(new Request(input).url);
+    return Promise.resolve(new Response(body, { status: body ? 200 : 404 }));
+  });
 
   const published: Publication[] = [];
   const database = openDatabase(':memory:');

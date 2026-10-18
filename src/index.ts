@@ -5,7 +5,7 @@ import type { CommandContext } from './commands/command.ts';
 import { commands } from './commands/index.ts';
 import { config } from './config.ts';
 import { openDatabase } from './database.ts';
-import { readFeed } from './feeds/feed-reader.ts';
+import { createFeedReader } from './feeds/feed-reader.ts';
 import { discordPublisher } from './publication/discord-publisher.ts';
 import { PublicationRepository } from './publication/publication-repository.ts';
 import { PublicationService } from './publication/publication-service.ts';
@@ -13,6 +13,7 @@ import { SubscriptionRepository } from './subscriptions/subscription-repository.
 import { SubscriptionService } from './subscriptions/subscription-service.ts';
 
 const database = openDatabase(config.databasePath);
+const readFeed = createFeedReader();
 const context: CommandContext = {
   subscriptions: new SubscriptionService(
     new SubscriptionRepository(database),

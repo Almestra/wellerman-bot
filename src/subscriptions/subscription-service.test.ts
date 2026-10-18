@@ -1,7 +1,7 @@
 import { assert, describe, expect, it } from 'vitest';
 
 import { openDatabase } from '../database.ts';
-import { readFeed } from '../feeds/feed-reader.ts';
+import { createFeedReader } from '../feeds/feed-reader.ts';
 import { SubscriptionRepository } from './subscription-repository.ts';
 import { SubscriptionService } from './subscription-service.ts';
 
@@ -23,7 +23,7 @@ const networkDown: typeof fetch = () =>
 
 function createService(fetcher: typeof fetch): SubscriptionService {
   const repository = new SubscriptionRepository(openDatabase(':memory:'));
-  return new SubscriptionService(repository, (url) => readFeed(url, fetcher));
+  return new SubscriptionService(repository, createFeedReader(fetcher));
 }
 
 describe('subscribing a channel to a feed', () => {
@@ -71,6 +71,41 @@ describe('subscribing a channel to a feed', () => {
     expect(result.status).toBe('subscribed');
     expect(service.list('guild')).toHaveLength(2);
   });
+
+  it.each([
+    { validator: 'ETag', condition: 'If-None-Match', value: '"tide-1"' },
+    {
+      validator: 'Last-Modified',
+      condition: 'If-Modified-Since',
+      value: 'Sat, 10 Oct 2026 06:00:00 GMT',
+    },
+  ])(
+    'downloads an unchanged feed only once with $validator',
+    async ({ validator, condition, value }) => {
+      let downloads = 0;
+      const service = createService((input, init) => {
+        if (new Request(input, init).headers.get(condition) === value) {
+          return Promise.resolve(new Response(null, { status: 304 }));
+        }
+        downloads += 1;
+        return Promise.resolve(
+          new Response(harbourNews, { headers: { [validator]: value } }),
+        );
+      });
+      await service.subscribe(request);
+
+      const result = await service.subscribe({
+        ...request,
+        channelId: 'other-channel',
+      });
+
+      expect(result).toEqual({
+        status: 'subscribed',
+        feed: { url: feedUrl, title: 'Harbour News' },
+      });
+      expect(downloads).toBe(1);
+    },
+  );
 
   it.each([
     {
